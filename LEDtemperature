@@ -19,6 +19,8 @@ CRGB leds[NUM_LEDS];
 
 int tmpKelvin = 1000;
 
+void temperature();
+
 void setup() {
 
   FastLED.setBrightness(BRIGHTNESS);
@@ -27,8 +29,15 @@ void setup() {
 
 void loop() {
 
+  temperature();
+
+  FastLED.show();
+}
+
+void temperature() {
+
   if (tmpKelvin < 39900)
-    tmpKelvin += 10;
+    tmpKelvin += 100;
   else
     tmpKelvin = 1000;
 
