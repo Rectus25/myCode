@@ -1,0 +1,93 @@
+#include <FastLED.h>
+
+#define TAPE_PIN    6         // connecting LED pin
+#define NUM_LEDS    150       // num of LEDS in LED strip
+#define TYPE        WS2812B   // type of LED strip
+
+int BRIGHTNESS = 255;
+
+int redColor;
+int blueColor;
+int greenColor;
+
+float firstConFloat = -0.1332047592;
+float seconConFloat = -0.0755148492;
+
+float tmpCalc;
+
+CRGB leds[NUM_LEDS];
+
+int tmpKelvin = 1000;
+
+void setup() {
+
+  FastLED.setBrightness(BRIGHTNESS);
+  LEDS.addLeds<TYPE, TAPE_PIN, GRB>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+}
+
+void loop() {
+
+  if (tmpKelvin < 39900)
+    tmpKelvin += 10;
+  else
+    tmpKelvin = 1000;
+
+  tmpKelvin = tmpKelvin / 100;
+
+  // calculating colors
+
+  //  red at first
+  if (tmpKelvin <= 66)
+    redColor = 255;
+  else {
+    tmpCalc = tmpKelvin - 60;
+    tmpCalc = 329.698727446 * pow(tmpCalc, firstConFloat);
+    redColor = tmpCalc;
+    if (redColor < 0)
+      redColor = 0;
+    if (redColor > 255)
+      redColor = 255;
+  }
+
+  //  than - green
+  if (tmpKelvin <= 66) {
+    tmpCalc = tmpKelvin;
+    tmpCalc = 99.4708025861 * log(tmpCalc) - 161.1195681661;
+    greenColor = tmpCalc;
+    if (greenColor < 0)
+      greenColor = 0;
+    if (greenColor > 255)
+      greenColor = 255;
+  }
+  else {
+    tmpCalc = tmpKelvin - 60;
+    tmpCalc = 288.1221695283 * pow(tmpCalc, seconConFloat);
+    greenColor = tmpCalc;
+    if (greenColor < 0)
+      greenColor = 0;
+    if (greenColor > 255)
+      greenColor = 255;
+  }
+
+  //  blue at the end
+  if (tmpKelvin >= 66)
+    blueColor = 255;
+  else if (tmpKelvin <= 19)
+    blueColor = 0;
+  else {
+    tmpCalc = tmpKelvin - 10;
+    tmpCalc = 138.5177312231 * log(tmpCalc) - 305.0447927307;
+    blueColor = tmpCalc;
+    if (blueColor < 0)
+      blueColor = 0;
+    if (blueColor > 255)
+      blueColor = 255;
+  }
+
+  tmpKelvin *= 100;
+
+  //  my problem is at here
+  //  when I'm filling LED
+  for (int runner(0); runner < NUM_LEDS; runner++)
+    leds[runner].setRGB(redColor, greenColor, blueColor);
+}
